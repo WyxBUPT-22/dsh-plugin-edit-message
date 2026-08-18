@@ -1,6 +1,6 @@
 # dsh-plugin-edit-message
 
-**DSH (DeepSeek Harness) Web GUI 插件：智能体回复被中断后，一键把最后一条用户消息文本载回输入框，改完直接发送——不用再重新打一遍。**
+**English** · [中文](README.zh.md)
 
 DSH (DeepSeek Harness) Web GUI plugin: **edit the last user message back into
 the composer after stopping a turn** — no more retyping from scratch.
@@ -21,30 +21,28 @@ or the agent loop.
 
 The plugin bundles as a `dsh.bundle` + `dsh.client` package. Two paths:
 
-### From this source checkout
-
-The repository is a pnpm workspace that links an official
-`deepseek-harness` checkout (for types and runtime deps). It must be built
-once (`pnpm run build` in the checkout) so `lib/types` and `lib/client.js`
-exist.
+### From npm (published)
 
 ```sh
-# 1. install deps + link the official checkout as a workspace member
-pnpm install
+dsh plugin --profile <name> add dsh-plugin-edit-message
+dsh --profile <name>
+```
 
-# 2. build the client bundle (emits lib/client.js)
-pnpm run build
+### From this source checkout
 
-# 3. install the bundle into a dsh profile (see docs/user/develop/basic/publish.md)
+The repository is self-contained: devDependencies resolve the official
+harness client packages from the npm registry, so no `deepseek-harness`
+checkout is needed.
+
+```sh
+pnpm install     # pulls the official client packages from npm
+pnpm run build   # emits lib/index.js + lib/client.js + lib/types
 dsh plugin --profile <name> add /path/to/dsh-plugin-edit-message
 dsh --profile <name>
 ```
 
-### From npm (once published)
-
-```sh
-dsh plugin --profile <name> add dsh-plugin-edit-message
-```
+See `docs/user/develop/basic/publish.md` in the harness checkout for the
+`dsh plugin` workflow.
 
 ## How it works
 
@@ -73,12 +71,10 @@ interaction value — edit the text, resend — with zero blast radius.
 ```sh
 pnpm run typecheck   # tsc --noEmit (strict)
 pnpm run test        # vitest (logic matrix + component behavior)
-pnpm run build       # tsdown → lib/client.js
+pnpm run build       # tsdown → lib/client.js + types
 ```
 
-The component test aliases `@deepseek-ai/dsh-client-ui-primitives` and `react`
-to source/pinned versions so a single React instance renders; everything else
-resolves through the linked harness checkout.
+`pnpm publish` runs `prepublishOnly` (typecheck + test + build) first.
 
 ## License
 
