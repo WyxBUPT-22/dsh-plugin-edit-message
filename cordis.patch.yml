@@ -1,0 +1,6 @@
+# The dsh-plugin-edit-message bundle patch: enables the web client plugin.
+# Applied as its own layer; the profile's own cordis.patch.yml and any
+# --patch overlays come after it.
+- insert:
+    - id: edit-message
+      name: dsh-plugin-edit-message
