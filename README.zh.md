@@ -12,13 +12,33 @@
 
 ## 安装
 
-插件以 `dsh.bundle` + `dsh.client` 包形式发布，两种方式：
+插件以 `dsh.bundle` + `dsh.client` 包形式发布，适用于任何能加载第三方 bundle 的 DSH 环境（源码 `dsh web`、DSH Desktop、自定义 profile）。
 
-### 从 npm 安装（已发布）
+### 从 npm 安装（已发布，推荐）
 
 ```sh
-dsh plugin --profile <profile名> add dsh-plugin-edit-message
-dsh --profile <profile名>
+dsh plugin --profile web add dsh-plugin-edit-message
+```
+
+装完后**完全退出并重新打开 GUI**——客户端插件 bundle 在启动时注册。
+
+**DSH Desktop 用户**：Desktop 的 `DSH_HOME` 位于 `%APPDATA%\dsh-desktop\harness`，需显式指定：
+
+```bash
+DSH_HOME="${APPDATA}/dsh-desktop/harness" \
+dsh plugin --profile web add dsh-plugin-edit-message
+```
+
+然后退出重开 DSH Desktop。
+
+### 从 GitHub 或本地源码安装（未发布版本）
+
+```sh
+# GitHub 仓库
+dsh plugin --profile web add git+https://github.com/WyxBUPT-22/dsh-plugin-edit-message.git
+
+# 本地 checkout（先 pnpm install && pnpm run build）
+dsh plugin --profile web add /path/to/dsh-plugin-edit-message
 ```
 
 ### 从源码构建安装
@@ -32,7 +52,7 @@ dsh plugin --profile <profile名> add /path/to/dsh-plugin-edit-message
 dsh --profile <profile名>
 ```
 
-`dsh plugin` 的完整用法参见官方 checkout 的 `docs/user/develop/basic/publish.md`。
+卸载：`dsh plugin --profile <profile名> remove dsh-plugin-edit-message`。`dsh plugin` 的完整用法参见官方 checkout 的 `docs/user/develop/basic/publish.md`。
 
 ## 工作原理
 

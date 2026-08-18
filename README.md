@@ -19,13 +19,37 @@ or the agent loop.
 
 ## Install
 
-The plugin bundles as a `dsh.bundle` + `dsh.client` package. Two paths:
+The plugin bundles as a `dsh.bundle` + `dsh.client` package. It works on any
+DSH setup that loads third-party bundles (source `dsh web`, DSH Desktop,
+custom profiles).
 
-### From npm (published)
+### From npm (published — recommended)
 
 ```sh
-dsh plugin --profile <name> add dsh-plugin-edit-message
-dsh --profile <name>
+dsh plugin --profile web add dsh-plugin-edit-message
+```
+
+Restart the GUI (fully quit and reopen) after installing — client plugin
+bundles register at startup.
+
+**DSH Desktop users:** Desktop's `DSH_HOME` lives under
+`%APPDATA%\dsh-desktop\harness`, so target that explicitly:
+
+```bash
+DSH_HOME="${APPDATA}/dsh-desktop/harness" \
+dsh plugin --profile web add dsh-plugin-edit-message
+```
+
+Then quit and reopen DSH Desktop.
+
+### From GitHub or a local checkout (unpublished builds)
+
+```sh
+# GitHub repository
+dsh plugin --profile web add git+https://github.com/WyxBUPT-22/dsh-plugin-edit-message.git
+
+# local checkout (pnpm install && pnpm run build first)
+dsh plugin --profile web add /path/to/dsh-plugin-edit-message
 ```
 
 ### From this source checkout
@@ -41,6 +65,7 @@ dsh plugin --profile <name> add /path/to/dsh-plugin-edit-message
 dsh --profile <name>
 ```
 
+Uninstall with `dsh plugin --profile <name> remove dsh-plugin-edit-message`.
 See `docs/user/develop/basic/publish.md` in the harness checkout for the
 `dsh plugin` workflow.
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-edit-message",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "DSH web plugin: edit the last user message back into the composer after stopping a turn",
   "keywords": [
     "dsh",
