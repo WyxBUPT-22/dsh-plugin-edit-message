@@ -117,7 +117,9 @@ describe('EditTailMessageButton', () => {
 
   it('prefers the official focus verb over DOM focus when deployed', () => {
     const focus = vi.fn()
-    const { view, inputActions } = renderButton({ inputActions: { focus } })
+    // The published InputActions has no focus member: a deployed fork that
+    // adds it (or a future rc) is simulated by overlaying it.
+    const { view, inputActions } = renderButton({ inputActions: { focus } as never })
     fireEvent.click(view.getByRole('button', { name: '编辑上一条消息' }))
     expect(inputActions.setDraft).toHaveBeenCalledWith('build it')
     expect(focus).toHaveBeenCalledTimes(1)

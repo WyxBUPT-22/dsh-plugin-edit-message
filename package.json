@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-edit-message",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DSH web plugin: edit the last user message back into the composer after stopping a turn",
   "keywords": [
     "dsh",
@@ -52,19 +52,19 @@
     "@deepseek-ai/dsh-client-ui-conversation": ">=0.1.0-rc.0",
     "@deepseek-ai/dsh-client-ui-primitives": ">=0.1.0-rc.0",
     "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.0",
-    "react": "^18.0.0 || ^19.0.0"
+    "react": "^18.2.0"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-client-locale": "workspace:*",
-    "@deepseek-ai/dsh-client-runtime": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-conversation": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:*",
+    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.7",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "^19.0.0",
+    "@types/react": "^18.2.0",
     "jsdom": "29.1.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
