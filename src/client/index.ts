@@ -2,10 +2,16 @@
  * Edit-message plugin, browser half: registers the composer tool-row control.
  * Composing this plugin out of cordis.yml removes the surface entirely.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-// Declaration-merge triggers: ui-conversation's SlotMap and client-locale's
-// Context.locale service are ambient unless a module importing them loads.
+import type { Context } from '@deepseek-ai/cordis'
+// Declaration-merge triggers. Each of these merges is ambient only while a
+// module importing it is loaded: ui-renderer declares the `ctx.slots` service,
+// client-locale declares `ctx.locale` plus `LocaleNamespaceMap`, ui-conversation
+// declares the `conversation.input.left` SlotMap member with the input standard
+// kit, and ui-session / ui-chat merge the session-scoped hooks the entry reads.
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type {} from '@deepseek-ai/dsh-client-ui-chat/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { EditTailMessageButton } from './EditTailMessageButton.tsx'
 import { en, NS, zh, type EditMessageKey } from './locales.ts'
@@ -24,7 +30,7 @@ export const inject = ['slots', 'locale']
  * Client plugin body: register the dictionaries and the tool-row entry.
  * @param ctx - client root context.
  */
-export function apply(ctx: ClientContext): void {
+export function apply(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-plugin-edit-message: dictionaries')
   ctx.slots.inject(
     'conversation.input.left',

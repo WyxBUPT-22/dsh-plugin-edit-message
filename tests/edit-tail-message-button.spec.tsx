@@ -7,9 +7,13 @@
 import type * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import type { ConversationSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-// Type-only: loads ui-conversation's SlotMap merge for the input.left member.
+import type { SessionSnapshot } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
+// Type-only: loads the merges that declare the input.left member and the
+// session-scoped standard kit the component reads.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type {} from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { EditTailMessageButton } from '../src/client/EditTailMessageButton.tsx'
 import { zh } from '../src/client/locales.ts'
@@ -24,7 +28,7 @@ interface NodeSpec {
   content?: readonly unknown[]
 }
 
-function chat(nodes: readonly NodeSpec[]) {
+function chat(nodes: readonly NodeSpec[]): ChatSnapshot {
   const byKey = new Map(nodes.map(spec => [spec.key, {
     key: spec.key,
     kind: spec.kind,
@@ -35,26 +39,28 @@ function chat(nodes: readonly NodeSpec[]) {
     nodes: {
       get: (key: string) => byKey.get(key),
       values: () => [...byKey.values()],
-      replace: () => {},
     },
-    locations: { getTurn: () => [], getStep: () => [], replace: () => {} },
+    locations: { getTurn: () => [], getStep: () => [] },
+    navigation: { items: () => [] },
     timeline: { turnOrder: [], turns: new Map() },
     legacy: { nodes: [], partial: null, runningCalls: [], turnTimings: new Map(), turnEnds: new Map() },
-  }
+  } as unknown as ChatSnapshot
+}
+
+/** The framework's selector hook bound to one fixed snapshot. */
+function useChatOf(snapshot: ChatSnapshot | undefined): Props['useChat'] {
+  return (<Selected,>(selector: (chat: ChatSnapshot) => Selected): Selected =>
+    selector(snapshot as ChatSnapshot)) as Props['useChat']
 }
 
 function renderButton(over: {
   running?: boolean
   nodes?: readonly NodeSpec[]
+  /** Omit the Chat target entirely (a shell without ui-chat). */
+  noChatHook?: boolean
   inputActions?: Partial<Props['inputActions']>
 } = {}) {
-  const session = {
-    running: over.running ?? false,
-    chat: chat(over.nodes ?? [
-      { key: 'u1', kind: 'user', content: [{ type: 'text', text: 'build it' }] },
-      { key: 'a1', kind: 'assistant-step' },
-    ]),
-  } as unknown as ConversationSnapshot
+  const session = { running: over.running ?? false } as unknown as SessionSnapshot
   const inputActions = {
     setDraft: vi.fn(),
     addImages: () => true,
@@ -63,6 +69,10 @@ function renderButton(over: {
     submit: () => {},
     ...over.inputActions,
   } as Props['inputActions']
+  const useChat = useChatOf(chat(over.nodes ?? [
+    { key: 'u1', kind: 'user', content: [{ type: 'text', text: 'build it' }] },
+    { key: 'a1', kind: 'assistant-step' },
+  ]))
   const view = render((
     <EditTailMessageButton
         session={session}
@@ -70,8 +80,11 @@ function renderButton(over: {
         inputActions={inputActions}
         t={t}
         sessionId={'s1' as never}
+        useChat={over.noChatHook === true ? undefined as never : useChat}
+        useConversation={vi.fn()}
         useInput={vi.fn()}
         useSession={vi.fn()}
+        useSessionPendingInteraction={vi.fn()}
         useSessions={vi.fn()}
         useWorkspaces={vi.fn()}
         useProjection={vi.fn()}
@@ -106,7 +119,23 @@ describe('EditTailMessageButton', () => {
     expect(view.queryByRole('button', { name: '编辑上一条消息' })).toBeNull()
   })
 
+  it('renders nothing instead of crashing without the ui-chat standard hook', () => {
+    const { view } = renderButton({ noChatHook: true })
+    expect(view.queryByRole('button', { name: '编辑上一条消息' })).toBeNull()
+  })
+
   it('loads the tail user message into the composer on click', () => {
+    const { view, inputActions } = renderButton()
+    const editor = document.createElement('div')
+    editor.setAttribute('data-composer-input', '')
+    editor.tabIndex = -1
+    document.body.appendChild(editor)
+    fireEvent.click(view.getByRole('button', { name: '编辑上一条消息' }))
+    expect(inputActions.setDraft).toHaveBeenCalledWith('build it')
+    expect(document.activeElement).toBe(editor)
+  })
+
+  it('falls back to the legacy textarea composer when no editable marker exists', () => {
     const { view, inputActions } = renderButton()
     const textarea = document.createElement('textarea')
     document.body.appendChild(textarea)

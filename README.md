@@ -94,10 +94,30 @@ See `docs/user/develop/basic/publish.md` in the harness checkout for the
   File-backed and cannot be resurrected from the durable log).
 - On click: `inputActions.setDraft(text)` restores the text and the composer
   is focused. The plugin prefers `inputActions.focus` when the deployed
-  runtime exposes it, otherwise falls back to the composer textarea (the GUI
-  keeps exactly one).
+  runtime exposes it, otherwise it focuses the editable surface —
+  `[data-composer-input]` on harness 0.1.2+ (a Lexical-driven
+  `contenteditable`), with the legacy composer `<textarea>` as the last
+  fallback.
 - If you remove the plugin (`dsh plugin remove dsh-plugin-edit-message`), the
   surface disappears entirely — the tool row reverts to official chrome.
+
+## Compatibility
+
+The plugin tracks the harness client contract, which was reshaped in
+**0.1.2-alpha**: the monolithic `@deepseek-ai/dsh-client-runtime` was split
+into `dsh-client-store` + the `dsh-client-ui-*` family, and the transcript
+moved off `SessionSnapshot` (whose `chat` field no longer exists) onto the Chat
+target published per Conversation binding and reached through the `useChat`
+standard hook.
+
+| Plugin | Harness / DSH Desktop | Notes |
+|---|---|---|
+| 0.1.4+ | 0.1.2-alpha.2 or newer (DSH Desktop 0.7.x) | reads the transcript through `useChat` |
+| ≤ 0.1.3 | 0.1.0-rc.x (DSH Desktop ≤ 0.5.0) | reads `session.chat`; the composer control silently does not render on 0.1.2 |
+
+On 0.1.2+ the pre-0.1.4 builds fail their slot with
+`Cannot read properties of undefined (reading 'order')` and the button never
+appears.
 
 ## Differences from in-transcript editing (Codex style)
 

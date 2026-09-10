@@ -73,8 +73,23 @@ dsh --profile <profile名>
 
 - 注册一个客户端插件（`dsh.client` manifest，`platform: web`），向官方 `conversation.input.left`（输入框工具行左侧，一个文档化的多插件 list 插槽）贡献一个条目——**官方代码零改动**。
 - 按钮**仅在以下条件同时成立时显示**：会话空闲、存在最后一条用户/steering 消息、且该消息为纯文本（草稿图片是浏览器 File 引用，无法从持久化日志中复活，因此含图片的消息保持仅复制）。
-- 点击行为：`inputActions.setDraft(text)` 恢复文本并聚焦输入框。当部署的运行时暴露 `inputActions.focus` 时优先使用它，否则回退到 composer 文本框（GUI 中只有这一个）。
+- 点击行为：`inputActions.setDraft(text)` 恢复文本并聚焦输入框。当部署的运行时暴露 `inputActions.focus` 时优先使用它，否则聚焦可编辑表面——harness 0.1.2+ 上是 `[data-composer-input]`（Lexical 驱动的 `contenteditable`），旧版 composer `<textarea>` 作为最后回退。
 - 卸载插件（`dsh plugin remove dsh-plugin-edit-message`）后，功能完全消失，工具行恢复官方原样。
+
+## 兼容性
+
+本插件跟随 harness 客户端契约，而该契约在 **0.1.2-alpha** 被重构：单体包
+`@deepseek-ai/dsh-client-runtime` 被拆成 `dsh-client-store` 加 `dsh-client-ui-*`
+一族，同时会话记录从 `SessionSnapshot`（其 `chat` 字段已不存在）搬到了按
+Conversation binding 发布的 Chat target 上，需经 `useChat` 标准 hook 读取。
+
+| 插件版本 | Harness / DSH Desktop | 说明 |
+|---|---|---|
+| 0.1.4+ | 0.1.2-alpha.2 及以后（DSH Desktop 0.7.x） | 经 `useChat` 读取会话记录 |
+| ≤ 0.1.3 | 0.1.0-rc.x（DSH Desktop ≤ 0.5.0） | 读 `session.chat`；在 0.1.2 上按钮静默不显示 |
+
+在 0.1.2+ 上，0.1.4 之前的版本会让所在插槽崩溃：
+`Cannot read properties of undefined (reading 'order')`，按钮永远不出现。
 
 ## 与"原处替换编辑"（Codex 风格）的差异
 
