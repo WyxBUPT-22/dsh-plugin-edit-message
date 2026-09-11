@@ -50,9 +50,16 @@ export function EditTailMessageButton(props: Props) {
   return <TailEditButton {...props} useChat={props.useChat} />
 }
 
-function TailEditButton({ session, useChat, inputActions, t }: Props) {
+function TailEditButton({ useSession, useChat, inputActions, t }: Props) {
   const [hovered, setHovered] = useState(false)
-  const text = useChat((chat) => tailUserText(session.running, chat))
+  // Lifecycle comes from the standard Session hook, never from the slot's owner
+  // props. Harness 0.1.2-alpha passed `InputZone` ({session, input}) here, but
+  // 0.1.2-rc.1 stopped: the responder now calls
+  // renderSlot("conversation.input.left", {}) and the owner share is gone.
+  // `useSession` is contributed by ui-session for every session-scoped slot on
+  // every 0.1.2 build, so reading it keeps this entry working across the line.
+  const running = useSession((session) => session.running)
+  const text = useChat((chat) => tailUserText(running, chat))
   if (text === null) return null
   const onEdit = (event: MouseEvent): void => {
     event.preventDefault()

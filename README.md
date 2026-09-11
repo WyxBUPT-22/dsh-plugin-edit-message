@@ -103,21 +103,34 @@ See `docs/user/develop/basic/publish.md` in the harness checkout for the
 
 ## Compatibility
 
-The plugin tracks the harness client contract, which was reshaped in
-**0.1.2-alpha**: the monolithic `@deepseek-ai/dsh-client-runtime` was split
-into `dsh-client-store` + the `dsh-client-ui-*` family, and the transcript
-moved off `SessionSnapshot` (whose `chat` field no longer exists) onto the Chat
-target published per Conversation binding and reached through the `useChat`
-standard hook.
+The plugin tracks the harness client contract, which was reshaped twice inside
+the **0.1.2** line:
 
-| Plugin | Harness / DSH Desktop | Notes |
+1. `0.1.2-alpha` split the monolithic `@deepseek-ai/dsh-client-runtime` into
+   `dsh-client-store` + the `dsh-client-ui-*` family, and moved the transcript
+   off `SessionSnapshot` (whose `chat` field no longer exists) onto the Chat
+   target published per Conversation binding, reached through the `useChat`
+   standard hook.
+2. `0.1.2-rc.1` stopped handing the composer tool row its `InputZone` owner
+   props: the responder now calls
+   `renderSlot("conversation.input.left", {})`. Session lifecycle therefore
+   comes from the `useSession` standard hook, which ui-session contributes for
+   every session-scoped slot on every 0.1.2 build.
+
+| Plugin | Harness / DSH Desktop | Reads |
 |---|---|---|
-| 0.1.4+ | 0.1.2-alpha.2 or newer (DSH Desktop 0.7.x) | reads the transcript through `useChat` |
-| ≤ 0.1.3 | 0.1.0-rc.x (DSH Desktop ≤ 0.5.0) | reads `session.chat`; the composer control silently does not render on 0.1.2 |
+| 0.1.5+ | 0.1.2-alpha.1 … 0.1.2-rc.1 (Desktop 0.7.x / 0.8.x) | `useChat` + `useSession`; **no owner props** |
+| 0.1.4 | 0.1.2-alpha.1 … 0.1.2-alpha.5 (Desktop 0.7.x) | `useChat` + the `InputZone` owner prop |
+| ≤ 0.1.3 | 0.1.0-rc.x (Desktop ≤ 0.5.0) | `session.chat` |
 
-On 0.1.2+ the pre-0.1.4 builds fail their slot with
-`Cannot read properties of undefined (reading 'order')` and the button never
-appears.
+Both 0.1.2 breaking changes fail the slot silently for older builds — the button
+simply never appears, with the crash below in the console:
+
+```
+slot entry crashed in 'conversation.input.left':
+  TypeError: Cannot read properties of undefined (reading 'order')   // <= 0.1.3 on 0.1.2-alpha
+  TypeError: Cannot read properties of undefined (reading 'running') // 0.1.4 on 0.1.2-rc.1
+```
 
 ## Differences from in-transcript editing (Codex style)
 

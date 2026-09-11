@@ -53,6 +53,12 @@ function useChatOf(snapshot: ChatSnapshot | undefined): Props['useChat'] {
     selector(snapshot as ChatSnapshot)) as Props['useChat']
 }
 
+/** The standard Session hook bound to one fixed lifecycle state. */
+function useSessionOf(running: boolean): Props['useSession'] {
+  return (<Selected,>(selector: (session: SessionSnapshot) => Selected): Selected =>
+    selector({ running } as unknown as SessionSnapshot)) as Props['useSession']
+}
+
 function renderButton(over: {
   running?: boolean
   nodes?: readonly NodeSpec[]
@@ -60,7 +66,6 @@ function renderButton(over: {
   noChatHook?: boolean
   inputActions?: Partial<Props['inputActions']>
 } = {}) {
-  const session = { running: over.running ?? false } as unknown as SessionSnapshot
   const inputActions = {
     setDraft: vi.fn(),
     addImages: () => true,
@@ -73,17 +78,19 @@ function renderButton(over: {
     { key: 'u1', kind: 'user', content: [{ type: 'text', text: 'build it' }] },
     { key: 'a1', kind: 'assistant-step' },
   ]))
+  // Standard props only. `conversation.input.left` carries no owner share on
+  // harness 0.1.2-rc.1 (the responder calls renderSlot with `{}`), so every
+  // value this entry reads must come from the standard kit — omitting the owner
+  // props here is what stops that dependency from creeping back in.
   const view = render((
     <EditTailMessageButton
-        session={session}
-        input={{} as never}
         inputActions={inputActions}
         t={t}
         sessionId={'s1' as never}
         useChat={over.noChatHook === true ? undefined as never : useChat}
         useConversation={vi.fn()}
         useInput={vi.fn()}
-        useSession={vi.fn()}
+        useSession={useSessionOf(over.running ?? false)}
         useSessionPendingInteraction={vi.fn()}
         useSessions={vi.fn()}
         useWorkspaces={vi.fn()}

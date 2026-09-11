@@ -112,17 +112,19 @@ function entryProps(over: { running?: boolean; useChat?: unknown } = {}) {
   ])
   const chat = { order: ['u1', 'a1'], nodes: { get: (key: string) => nodes.get(key) } }
   const useChat = <Selected,>(selector: (snapshot: unknown) => Selected): Selected => selector(chat)
+  const useSession = <Selected,>(selector: (session: unknown) => Selected): Selected =>
+    selector({ running: over.running ?? false })
   return {
     inputActions,
+    // Standard props only: on harness 0.1.2-rc.1 the slot passes no owner
+    // share, so the entry must not read one.
     props: {
-      session: { running: over.running ?? false },
-      input: {},
       inputActions,
       sessionId: 's1',
       useChat: 'useChat' in over ? over.useChat : useChat,
       useConversation: () => undefined,
       useInput: () => undefined,
-      useSession: () => undefined,
+      useSession,
       useSessions: () => undefined,
       useSessionPendingInteraction: () => undefined,
       useWorkspaces: () => undefined,

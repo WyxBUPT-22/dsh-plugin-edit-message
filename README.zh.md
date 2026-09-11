@@ -78,18 +78,30 @@ dsh --profile <profile名>
 
 ## 兼容性
 
-本插件跟随 harness 客户端契约，而该契约在 **0.1.2-alpha** 被重构：单体包
-`@deepseek-ai/dsh-client-runtime` 被拆成 `dsh-client-store` 加 `dsh-client-ui-*`
-一族，同时会话记录从 `SessionSnapshot`（其 `chat` 字段已不存在）搬到了按
-Conversation binding 发布的 Chat target 上，需经 `useChat` 标准 hook 读取。
+本插件跟随 harness 客户端契约，而该契约在 **0.1.2** 这条线上被改了两次：
 
-| 插件版本 | Harness / DSH Desktop | 说明 |
+1. `0.1.2-alpha` 把单体包 `@deepseek-ai/dsh-client-runtime` 拆成
+   `dsh-client-store` 加 `dsh-client-ui-*` 一族，同时会话记录从
+   `SessionSnapshot`（其 `chat` 字段已不存在）搬到了按 Conversation binding
+   发布的 Chat target 上，需经 `useChat` 标准 hook 读取。
+2. `0.1.2-rc.1` 不再给输入框工具行传 `InputZone` owner props：宿主现在调用的是
+   `renderSlot("conversation.input.left", {})`。因此会话生命周期改从 `useSession`
+   标准 hook 读取 —— 该 hook 由 ui-session 提供，0.1.2 全系每个 session 作用域
+   插槽都有。
+
+| 插件版本 | Harness / DSH Desktop | 读取方式 |
 |---|---|---|
-| 0.1.4+ | 0.1.2-alpha.2 及以后（DSH Desktop 0.7.x） | 经 `useChat` 读取会话记录 |
-| ≤ 0.1.3 | 0.1.0-rc.x（DSH Desktop ≤ 0.5.0） | 读 `session.chat`；在 0.1.2 上按钮静默不显示 |
+| 0.1.5+ | 0.1.2-alpha.1 … 0.1.2-rc.1（Desktop 0.7.x / 0.8.x） | `useChat` + `useSession`，**不依赖任何 owner props** |
+| 0.1.4 | 0.1.2-alpha.1 … 0.1.2-alpha.5（Desktop 0.7.x） | `useChat` + `InputZone` owner prop |
+| ≤ 0.1.3 | 0.1.0-rc.x（Desktop ≤ 0.5.0） | `session.chat` |
 
-在 0.1.2+ 上，0.1.4 之前的版本会让所在插槽崩溃：
-`Cannot read properties of undefined (reading 'order')`，按钮永远不出现。
+两次破坏对旧版本都是**静默失败** —— 按钮直接不出现，控制台里是这样：
+
+```
+slot entry crashed in 'conversation.input.left':
+  TypeError: Cannot read properties of undefined (reading 'order')   // ≤ 0.1.3 跑在 0.1.2-alpha
+  TypeError: Cannot read properties of undefined (reading 'running') // 0.1.4 跑在 0.1.2-rc.1
+```
 
 ## 与"原处替换编辑"（Codex 风格）的差异
 
